@@ -1,12 +1,14 @@
 package infoblox
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"net/netip"
 
 	ibclient "github.com/infobloxopen/infoblox-go-client/v2"
 	"k8s.io/utils/ptr"
+	"sigs.k8s.io/controller-runtime/pkg/log"
 )
 
 // Known limitations:
@@ -129,7 +131,8 @@ func nextAvailableIBFunc(subnet netip.Prefix, view string) string {
 }
 
 // ReleaseAddress releases the IP address of the given hostname in the given subnet.
-func (c *client) ReleaseAddress(view string, subnet netip.Prefix, hostname string) error {
+func (c *client) ReleaseAddress(ctx context.Context, view string, subnet netip.Prefix, hostname string) error {
+	logger := log.FromContext(ctx)
 	hr, err := c.objMgr.GetHostRecord("", "", hostname, "", "")
 	if err != nil {
 		return err
@@ -176,12 +179,17 @@ func (c *client) ReleaseAddress(view string, subnet netip.Prefix, hostname strin
 	hr.View = toDNSView(view)
 
 	if len(hr.Ipv4Addrs) == 0 && len(hr.Ipv6Addrs) == 0 {
-		_, err := c.connector.DeleteObject(hr.Ref)
-		return err
+		logger.Info("Deleting host record", "hostname", hostname)
+		if _, err := c.connector.DeleteObject(hr.Ref); err != nil {
+			return fmt.Errorf("failed to delete Infoblox host record: %w", err)
+		}
+		return nil
 	}
 	prepareHostRecordForUpdate(hr)
-	_, err = c.connector.UpdateObject(hr, hr.Ref)
-	return err
+	if _, err = c.connector.UpdateObject(hr, hr.Ref); err != nil {
+		return fmt.Errorf("failed to update Infoblox host record: %w", err)
+	}
+	return nil
 }
 
 func toDNSView(view string) *string {

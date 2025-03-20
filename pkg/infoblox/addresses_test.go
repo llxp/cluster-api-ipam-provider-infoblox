@@ -1,18 +1,24 @@
 package infoblox
 
 import (
+	"context"
 	"log"
 	"net/netip"
 
 	ibclient "github.com/infobloxopen/infoblox-go-client/v2"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
+	"k8s.io/klog/v2"
+	logger "sigs.k8s.io/controller-runtime/pkg/log"
 )
 
 const dnsEnabled = true
 
 var _ = Describe("IP Address Management", func() {
 	var hostname string
+	ctx := context.TODO()
+	// add log to context
+	ctx = logger.IntoContext(ctx, klog.Background())
 
 	BeforeEach(func() {
 		hostname = "testmachine-1." + domain
@@ -98,13 +104,13 @@ var _ = Describe("IP Address Management", func() {
 			})
 
 			It("deletes the host record when releasing the address", func() {
-				err := testClient.ReleaseAddress(testView, v4subnet1, hostname)
+				err := testClient.ReleaseAddress(ctx, testView, v4subnet1, hostname)
 				Expect(err).NotTo(HaveOccurred())
 				hrDeleted = true
 			})
 
 			It("doesnt change the host record when releasing an address in a different subnet", func() {
-				err := testClient.ReleaseAddress(testView, v4subnet2, hostname)
+				err := testClient.ReleaseAddress(ctx, testView, v4subnet2, hostname)
 				Expect(err).NotTo(HaveOccurred())
 			})
 		})
@@ -136,13 +142,13 @@ var _ = Describe("IP Address Management", func() {
 			})
 
 			It("deletes the host record when releasing the address", func() {
-				err := testClient.ReleaseAddress(testView, v6subnet1, hostname)
+				err := testClient.ReleaseAddress(ctx, testView, v6subnet1, hostname)
 				Expect(err).NotTo(HaveOccurred())
 				hrDeleted = true
 			})
 
 			It("doesnt change the host record when releasing an address in a different subnet", func() {
-				err := testClient.ReleaseAddress(testView, v6subnet2, hostname)
+				err := testClient.ReleaseAddress(ctx, testView, v6subnet2, hostname)
 				Expect(err).NotTo(HaveOccurred())
 			})
 		})
@@ -178,7 +184,7 @@ var _ = Describe("IP Address Management", func() {
 			})
 
 			It("keeps the host record when releasing an address", func() {
-				err := testClient.ReleaseAddress(testView, v4subnet1, hostname)
+				err := testClient.ReleaseAddress(ctx, testView, v4subnet1, hostname)
 				Expect(err).NotTo(HaveOccurred())
 
 				hostRecord, err := testClient.objMgr.GetHostRecordByRef(hostRecord.Ref)
@@ -210,7 +216,7 @@ var _ = Describe("IP Address Management", func() {
 			})
 
 			It("keeps the host record when releasing an address", func() {
-				err := testClient.ReleaseAddress(testView, v6subnet1, hostname)
+				err := testClient.ReleaseAddress(ctx, testView, v6subnet1, hostname)
 				Expect(err).NotTo(HaveOccurred())
 
 				hostRecord, err := testClient.objMgr.GetHostRecordByRef(hostRecord.Ref)
@@ -243,7 +249,7 @@ var _ = Describe("IP Address Management", func() {
 			})
 
 			It("keeps the host record when releasing a v4 address", func() {
-				err := testClient.ReleaseAddress(testView, v4subnet1, hostname)
+				err := testClient.ReleaseAddress(ctx, testView, v4subnet1, hostname)
 				Expect(err).NotTo(HaveOccurred())
 
 				hostRecord, err := testClient.objMgr.GetHostRecordByRef(hostRecord.Ref)
@@ -252,7 +258,7 @@ var _ = Describe("IP Address Management", func() {
 			})
 
 			It("keeps the host record when releasing a v6 address", func() {
-				err := testClient.ReleaseAddress(testView, v6subnet1, hostname)
+				err := testClient.ReleaseAddress(ctx, testView, v6subnet1, hostname)
 				Expect(err).NotTo(HaveOccurred())
 
 				hostRecord, err := testClient.objMgr.GetHostRecordByRef(hostRecord.Ref)

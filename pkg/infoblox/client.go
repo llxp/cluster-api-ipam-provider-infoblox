@@ -2,6 +2,7 @@
 package infoblox
 
 import (
+	"context"
 	"errors"
 	"net/netip"
 	"strings"
@@ -26,7 +27,7 @@ type Client interface {
 	// GetOrAllocateAddress allocates an address for a given hostname if none exists, and returns the new or existing address.
 	GetOrAllocateAddress(view string, subnet netip.Prefix, hostname, zone string) (netip.Addr, error)
 	// ReleaseAddress releases an address for a given hostname.
-	ReleaseAddress(view string, subnet netip.Prefix, hostname string) error
+	ReleaseAddress(ctx context.Context, view string, subnet netip.Prefix, hostname string) error
 	// CheckNetworkViewExists checks if Infoblox network view exists
 	CheckNetworkViewExists(view string) (bool, error)
 	// CheckNetworkExists checks if Infoblox network exists

@@ -10,6 +10,7 @@
 package ibmock
 
 import (
+	"context"
 	netip "net/netip"
 	reflect "reflect"
 
@@ -100,7 +101,7 @@ func (mr *MockClientMockRecorder) GetOrAllocateAddress(arg0, arg1, arg2, arg3 an
 }
 
 // ReleaseAddress mocks base method.
-func (m *MockClient) ReleaseAddress(arg0 string, arg1 netip.Prefix, arg2 string) error {
+func (m *MockClient) ReleaseAddress(ctx context.Context, arg0 string, arg1 netip.Prefix, arg2 string) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ReleaseAddress", arg0, arg1, arg2)
 	ret0, _ := ret[0].(error)

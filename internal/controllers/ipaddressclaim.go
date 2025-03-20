@@ -226,7 +226,7 @@ func (h *InfobloxClaimHandler) ReleaseAddress(ctx context.Context) (*ctrl.Result
 			continue
 		}
 
-		err = h.ibclient.ReleaseAddress(h.pool.Spec.NetworkView, subnet, hostName)
+		err = h.ibclient.ReleaseAddress(ctx, h.pool.Spec.NetworkView, subnet, hostName)
 		if err != nil {
 			// since ibclient.NotFoundError has a pointer receiver on it's Error() method, we can't use errors.As() here.
 			if _, ok := err.(*ibclient.NotFoundError); !ok {
